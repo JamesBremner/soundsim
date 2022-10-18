@@ -7,9 +7,6 @@
 #include <wex.h>
 #include "cStarterGUI.h"
 
-    const double deltaTime = 1;
-    const double deltaGrid = 1;
-
 class cGrid;
 
 /// @brief A location in 3D space
@@ -92,7 +89,12 @@ public:
 
     cSim(int Nx, int Ny, int Nz);
 
-    /// @brief Initialize the simulation
+    /** @brief Initialize the simulation
+     * 
+     * This should be called after all configuration parameters are set
+     * and before the first simulation step
+     */
+    
     void init();
 
     /// @brief Impose a source
@@ -106,28 +108,50 @@ public:
 
     std::string text();
 
+    double deltaTime() const
+    {
+        return myDeltaTime;
+    }
+    double deltaSpace() const
+    {
+        return myDeltaSpace;
+    }
+    double deltaSpaceTimeRatio() const
+    {
+        return myDeltaTimeSpaceRatio;
+    }
+
+    void deltaTime(double t);
+    void deltaSpace(double s);
+
 private:
-    int myNx, myNy, myNz;
+    int myNx, myNy, myNz; // grid resolution ( node count on each axis )
+    double myDeltaTime;   // simulation time step
+    double myDeltaSpace;  // grid spacing
+    double myDeltaTimeSpaceRatio;
     cGrid *myPrevGrid;
     cGrid *myNextGrid;
 };
+
+cSim theSim(4, 4, 4);
+
 void cNode::updateVelocity(cGrid *prev)
 {
     // Factor accounting for node density and simulation resolution
-    double f = deltaTime / ( myDensity * deltaGrid );
+    double f = theSim.deltaSpaceTimeRatio() / myDensity;
 
     // Node at this location with previous time step values
     cNode &prevNode = prev->node(myX, myY, myZ);
 
     // calculate updated velocities ( eq 12 )
-    myVx = prevNode.myVx - f * ( prev->node(myX+1,myY,myZ).myPressure - prevNode.myPressure);
-    myVy = prevNode.myVy - f * ( prev->node(myX,myY+1,myZ).myPressure - prevNode.myPressure);
-    myVz = prevNode.myVz - f * ( prev->node(myX,myY,myZ+1).myPressure - prevNode.myPressure);
+    myVx = prevNode.myVx - f * (prev->node(myX + 1, myY, myZ).myPressure - prevNode.myPressure);
+    myVy = prevNode.myVy - f * (prev->node(myX, myY + 1, myZ).myPressure - prevNode.myPressure);
+    myVz = prevNode.myVz - f * (prev->node(myX, myY, myZ + 1).myPressure - prevNode.myPressure);
 }
 void cNode::updatePressure(cGrid *prev)
 {
     // Factor accounting for node density, sound speed and simulation resolution
-    double f = myDensity * mySpeed * mySpeed * deltaTime / deltaGrid;
+    double f = myDensity * mySpeed * mySpeed * theSim.deltaSpaceTimeRatio();
 
     // Node at this location with previous time step values
     cNode &prevNode = prev->node(myX, myY, myZ);
@@ -166,6 +190,8 @@ cGrid::cGrid(int Nx, int Ny, int Nz, int time)
     n.myVx = -1;
     n.myVy = -1;
     n.myVz = -1;
+    n.myDensity = 1.225;
+    n.mySpeed = 340;
     myGrid.resize(myNx * myNy * myNz, n);
     for (int x = 0; x < myNx; x++)
     {
@@ -233,7 +259,9 @@ std::string cGrid::text()
     return ss.str();
 }
 cSim::cSim(int Nx, int Ny, int Nz)
-    : myNx(Nx), myNy(Ny), myNz(Nz)
+    : myNx(Nx), myNy(Ny), myNz(Nz),
+      myDeltaSpace(1), myDeltaTime(1),
+      myDeltaTimeSpaceRatio(myDeltaTime / myDeltaSpace)
 {
 }
 void cSim::init()
@@ -266,6 +294,17 @@ std::string cSim::text()
     std::cout << "\n=======\ntime = " << myNextGrid->myTime << "\n";
     return myNextGrid->text();
 }
+void cSim::deltaTime(double t)
+{
+    myDeltaTime = t;
+    myDeltaTimeSpaceRatio = myDeltaTime / myDeltaSpace;
+}
+void cSim::deltaSpace(double s)
+{
+    if (s < 1e-6)
+        throw std::runtime_error(
+            "Space resolution too small");
+}
 
 class cGUI : public cStarterGUI
 {
@@ -289,13 +328,13 @@ private:
 
 main()
 {
-    cSim S(4, 4, 4);
-    S.init();
-    S.source();
-    S.step();
-    std::cout << S.text();
-    S.step();
-    std::cout << S.text();
+
+    theSim.init();
+    theSim.source();
+    theSim.step();
+    std::cout << theSim.text();
+    theSim.step();
+    std::cout << theSim.text();
 
     // cGUI theGUI;
     return 0;
