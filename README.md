@@ -16,3 +16,5 @@ which can be converted to the following update formula for pressure and velocity
 
 
 Symbol definitions and feature specifications of the simulation application are documented here https://github.com/JamesBremner/soundsim/blob/main/doc/work.pdf
+
+Understanding the Finite-Difference Time-Domain Method, John B. Schneider, www.eecs.wsu.edu/~schneidj/ufdtd, 2010.
