@@ -4,134 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <wex.h>
-#include "cStarterGUI.h"
 
-class cGrid;
-
-/// @brief A location in 3D space
-class cNode
-{
-public:
-    int myX, myY, myZ;
-    double myPressure;
-    double myVx, myVy, myVz;
-    double myDensity; //  density in kg/m3
-    double mySpeed;   // speed of sound in m/s
-
-    /// @brief Update the values of the node
-    /// @param prev pointer to grid of nodes at previous time step
-
-    void updatePressure(cGrid *prev);
-    void updateVelocity(cGrid *prev);
-
-    void updateTestStub(cGrid *prev);
-
-    /// @brief text display of node values
-    /// @return text
-    std::string text();
-
-    /// @brief set node pressure
-    /// @param p
-    void pressure(double p)
-    {
-        myPressure = p;
-    }
-};
-/// @brief A 3D grid of locations
-class cGrid
-{
-public:
-    std::vector<cNode> myGrid;
-    int myNx, myNy, myNz;
-    int myTime;
-
-    /// @brief construct grid
-    /// @param Nx number of nodes in x direction
-    /// @param Ny number of nodes in y direction
-    /// @param Nz number of nodes in x direction
-    /// @param time time of simulation
-    cGrid(
-        int Nx, int Ny, int Nz,
-        int time);
-
-    /// @brief Impose a time source
-    /// @param n Node with surce values
-
-    void source(const cNode &n);
-
-    /// @brief update node values
-    /// @param prev pointer to grid of nodes with previous time step values
-    void updatePressure(cGrid *prev);
-    void updateVelocity(cGrid *prev);
-
-    /// @brief display od node values
-    /// @return text
-
-    std::string text();
-
-    /// @brief reference to node at a location
-    /// @param x
-    /// @param y
-    /// @param z
-    /// @return node reference
-    cNode &node(int x, int y, int z);
-};
-
-/// @brief A Finite Difference Time Domain simulator
-class cSim
-{
-public:
-    /// @brief Construct simulation of specified size
-    /// @param Nx
-    /// @param Ny
-    /// @param Nz
-
-    cSim(int Nx, int Ny, int Nz);
-
-    /** @brief Initialize the simulation
-     * 
-     * This should be called after all configuration parameters are set
-     * and before the first simulation step
-     */
-    
-    void init();
-
-    /// @brief Impose a source
-    void source();
-
-    /// @brief Advance simulatiobn one time step
-    void step();
-
-    /// @brief Text display of simulation state
-    /// @return text
-
-    std::string text();
-
-    double deltaTime() const
-    {
-        return myDeltaTime;
-    }
-    double deltaSpace() const
-    {
-        return myDeltaSpace;
-    }
-    double deltaSpaceTimeRatio() const
-    {
-        return myDeltaTimeSpaceRatio;
-    }
-
-    void deltaTime(double t);
-    void deltaSpace(double s);
-
-private:
-    int myNx, myNy, myNz; // grid resolution ( node count on each axis )
-    double myDeltaTime;   // simulation time step
-    double myDeltaSpace;  // grid spacing
-    double myDeltaTimeSpaceRatio;
-    cGrid *myPrevGrid;
-    cGrid *myNextGrid;
-};
+#include "soundsim.h"
 
 cSim theSim(4, 4, 4);
 
@@ -305,29 +179,24 @@ void cSim::deltaSpace(double s)
         throw std::runtime_error(
             "Space resolution too small");
 }
-
-class cGUI : public cStarterGUI
+void cSim::readParameterFile(const std::string &fname)
 {
-public:
-    cGUI()
-        : cStarterGUI(
-              "Starter",
-              {50, 50, 1000, 500}),
-          lb(wex::maker::make<wex::label>(fm))
-    {
-        lb.move(50, 50, 100, 30);
-        lb.text("Hello World");
-
-        show();
-        run();
-    }
-
-private:
-    wex::label &lb;
-};
-
-main()
+    std::ifstream ifs(fname);
+    if (!ifs.is_open())
+        throw std::runtime_error(
+            "Cannot read " + fname);
+    std::string line;
+    getline(ifs, line);
+    deltaSpace(atof(line.c_str()));
+    getline(ifs, line);
+    deltaTime(atof(line.c_str()));
+}
+main(int argc, char *argv[])
 {
+    if (argc < 2)
+        throw std::runtime_error("Missing parameter file name");
+
+    theSim.readParameterFile(argv[1]);
 
     theSim.init();
     theSim.source();
@@ -336,6 +205,5 @@ main()
     theSim.step();
     std::cout << theSim.text();
 
-    // cGUI theGUI;
     return 0;
 }
