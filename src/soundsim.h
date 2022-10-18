@@ -56,10 +56,11 @@ public:
     void updatePressure(cGrid *prev);
     void updateVelocity(cGrid *prev);
 
-    /// @brief display od node values
+    /// @brief display of node values
     /// @return text
 
     std::string text();
+    void binary( std::ofstream& of );
 
     /// @brief reference to node at a location
     /// @param x
@@ -99,7 +100,11 @@ public:
     /// @brief Text display of simulation state
     /// @return text
 
+    /// @brief human readable display of results
+    /// @return text
     std::string text();
+
+    void binary();
 
     double deltaTime() const
     {
@@ -124,5 +129,6 @@ private:
     double myDeltaTimeSpaceRatio;
     cGrid *myPrevGrid;
     cGrid *myNextGrid;
+    std::string myPressureFilename;
 };
 

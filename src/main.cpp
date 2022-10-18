@@ -118,12 +118,12 @@ cNode &cGrid::node(int x, int y, int z)
 std::string cGrid::text()
 {
     std::stringstream ss;
-    for (int x = 0; x < myNx; x++)
+    for (int z = 0; z < myNz; z++)
     {
-        ss << "x = " << x << "\n";
+        ss << "z = " << z << "\n";
         for (int y = 0; y < myNy; y++)
         {
-            for (int z = 0; z < myNz; z++)
+            for (int x = 0; x < myNx; x++)
             {
                 ss << node(x, y, z).text() + " ";
             }
@@ -131,6 +131,20 @@ std::string cGrid::text()
         }
     }
     return ss.str();
+}
+
+void cGrid::binary(std::ofstream &of)
+{
+    for (int z = 0; z < myNz; z++)
+    {
+        for (int y = 0; y < myNy; y++)
+        {
+            for (int x = 0; x < myNx; x++)
+            {
+                of << node(x, y, z).myPressure;
+            }
+        }
+    }
 }
 cSim::cSim(int Nx, int Ny, int Nz)
     : myNx(Nx), myNy(Ny), myNz(Nz),
@@ -168,6 +182,20 @@ std::string cSim::text()
     std::cout << "\n=======\ntime = " << myNextGrid->myTime << "\n";
     return myNextGrid->text();
 }
+void cSim::binary()
+{
+    std::ofstream ofs(myPressureFilename);
+    if (!ofs.is_open())
+        throw std::runtime_error(
+            "Cannot write " + myPressureFilename);
+
+    ofs << myNx << myNy << myNz;
+    ofs << 0.0 << 0.0 << 0.0;
+    ofs << myNx * myDeltaSpace
+        << myNy * myDeltaSpace
+        << myNz * myDeltaSpace;
+    myNextGrid->binary(ofs);
+}
 void cSim::deltaTime(double t)
 {
     myDeltaTime = t;
@@ -181,6 +209,19 @@ void cSim::deltaSpace(double s)
 }
 void cSim::readParameterFile(const std::string &fname)
 {
+    /*
+delta
+delta_t
+max_t
+sampling_rate
+source_type
+input_speed_filename
+input_density_filename
+output_pressure_base_filename
+output_velocity_x_base_filename
+output_velocity_y_base_filename
+output_velocuty_z_base_filename
+    */
     std::ifstream ifs(fname);
     if (!ifs.is_open())
         throw std::runtime_error(
@@ -190,6 +231,13 @@ void cSim::readParameterFile(const std::string &fname)
     deltaSpace(atof(line.c_str()));
     getline(ifs, line);
     deltaTime(atof(line.c_str()));
+    getline(ifs, line);
+    getline(ifs, line);
+    getline(ifs, line);
+    getline(ifs, line);
+    getline(ifs, line);
+    getline(ifs, line);
+    myPressureFilename = line;
 }
 main(int argc, char *argv[])
 {
