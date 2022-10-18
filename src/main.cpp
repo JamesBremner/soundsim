@@ -7,6 +7,9 @@
 #include <wex.h>
 #include "cStarterGUI.h"
 
+    const double deltaTime = 1;
+    const double deltaGrid = 1;
+
 class cGrid;
 
 /// @brief A location in 3D space
@@ -16,18 +19,23 @@ public:
     int myX, myY, myZ;
     double myPressure;
     double myVx, myVy, myVz;
+    double myDensity; //  density in kg/m3
+    double mySpeed;   // speed of sound in m/s
 
     /// @brief Update the values of the node
     /// @param prev pointer to grid of nodes at previous time step
 
-    void update(cGrid *prev);
+    void updatePressure(cGrid *prev);
+    void updateVelocity(cGrid *prev);
+
+    void updateTestStub(cGrid *prev);
 
     /// @brief text display of node values
     /// @return text
     std::string text();
 
     /// @brief set node pressure
-    /// @param p 
+    /// @param p
     void pressure(double p)
     {
         myPressure = p;
@@ -54,20 +62,21 @@ public:
     /// @param n Node with surce values
 
     void source(const cNode &n);
-    
+
     /// @brief update node values
     /// @param prev pointer to grid of nodes with previous time step values
-    void update(cGrid *prev);
+    void updatePressure(cGrid *prev);
+    void updateVelocity(cGrid *prev);
 
     /// @brief display od node values
-    /// @return text 
+    /// @return text
 
     std::string text();
 
     /// @brief reference to node at a location
-    /// @param x 
-    /// @param y 
-    /// @param z 
+    /// @param x
+    /// @param y
+    /// @param z
     /// @return node reference
     cNode &node(int x, int y, int z);
 };
@@ -77,9 +86,9 @@ class cSim
 {
 public:
     /// @brief Construct simulation of specified size
-    /// @param Nx 
-    /// @param Ny 
-    /// @param Nz 
+    /// @param Nx
+    /// @param Ny
+    /// @param Nz
 
     cSim(int Nx, int Ny, int Nz);
 
@@ -94,7 +103,7 @@ public:
 
     /// @brief Text display of simulation state
     /// @return text
-    
+
     std::string text();
 
 private:
@@ -102,8 +111,39 @@ private:
     cGrid *myPrevGrid;
     cGrid *myNextGrid;
 };
+void cNode::updateVelocity(cGrid *prev)
+{
+    // Factor accounting for node density and simulation resolution
+    double f = deltaTime / ( myDensity * deltaGrid );
 
-void cNode::update(cGrid *prev)
+    // Node at this location with previous time step values
+    cNode &prevNode = prev->node(myX, myY, myZ);
+
+    // calculate updated velocities ( eq 12 )
+    myVx = prevNode.myVx - f * ( prev->node(myX+1,myY,myZ).myPressure - prevNode.myPressure);
+    myVy = prevNode.myVy - f * ( prev->node(myX,myY+1,myZ).myPressure - prevNode.myPressure);
+    myVz = prevNode.myVz - f * ( prev->node(myX,myY,myZ+1).myPressure - prevNode.myPressure);
+}
+void cNode::updatePressure(cGrid *prev)
+{
+    // Factor accounting for node density, sound speed and simulation resolution
+    double f = myDensity * mySpeed * mySpeed * deltaTime / deltaGrid;
+
+    // Node at this location with previous time step values
+    cNode &prevNode = prev->node(myX, myY, myZ);
+
+    // calculate updated pressure ( eq 11 )
+    myPressure = prevNode.myPressure
+
+                 - f * (
+
+                           prevNode.myVx - prev->node(myX - 1, myY, myZ).myVx
+
+                           + prevNode.myVy - prev->node(myX, myY - 1, myZ).myVx
+
+                           + prevNode.myVz - prev->node(myX, myY, myZ - 1).myVx);
+}
+void cNode::updateTestStub(cGrid *prev)
 {
     // calculate new node values
     // a simple stub for testing the infrastructure
@@ -141,11 +181,17 @@ cGrid::cGrid(int Nx, int Ny, int Nz, int time)
         }
     }
 }
-void cGrid::update(cGrid *prev)
+void cGrid::updatePressure(cGrid *prev)
 {
     myTime = prev->myTime + 1;
     for (auto &n : myGrid)
-        n.update(prev);
+        n.updatePressure(prev);
+}
+void cGrid::updateVelocity(cGrid *prev)
+{
+    myTime = prev->myTime + 1;
+    for (auto &n : myGrid)
+        n.updateVelocity(prev);
 }
 void cGrid::source(const cNode &n)
 {
@@ -207,10 +253,13 @@ void cSim::source()
 void cSim::step()
 {
     delete myPrevGrid;
-
     myPrevGrid = myNextGrid;
     myNextGrid = new cGrid(myNx, myNy, myNz, 0);
-    myNextGrid->update(myPrevGrid);
+    myNextGrid->updatePressure(myPrevGrid);
+    delete myPrevGrid;
+    myPrevGrid = myNextGrid;
+    myNextGrid = new cGrid(myNx, myNy, myNz, 0);
+    myNextGrid->updateVelocity(myPrevGrid);
 }
 std::string cSim::text()
 {
