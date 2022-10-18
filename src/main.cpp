@@ -139,9 +139,9 @@ void cNode::updatePressure(cGrid *prev)
 
                            prevNode.myVx - prev->node(myX - 1, myY, myZ).myVx
 
-                           + prevNode.myVy - prev->node(myX, myY - 1, myZ).myVx
+                           + prevNode.myVy - prev->node(myX, myY - 1, myZ).myVy
 
-                           + prevNode.myVz - prev->node(myX, myY, myZ - 1).myVx);
+                           + prevNode.myVz - prev->node(myX, myY, myZ - 1).myVz);
 }
 void cNode::updateTestStub(cGrid *prev)
 {
