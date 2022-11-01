@@ -47,7 +47,7 @@ public:
         int time);
 
     /// @brief Impose a time source
-    /// @param n Node with surce values
+    /// @param n Node with source values
 
     void source(const cNode &n);
 

@@ -206,6 +206,12 @@ void cSim::deltaSpace(double s)
     if (s < 1e-6)
         throw std::runtime_error(
             "Space resolution too small");
+    myDeltaSpace = s;
+
+    // simulate a 1m by 1m by 1m space
+    myNx = 1 / s;
+    myNy = 1 / s;
+    myNz = 1 / s;
 }
 void cSim::readParameterFile(const std::string &fname)
 {
