@@ -238,12 +238,20 @@ output_velocuty_z_base_filename
     getline(ifs, line);
     deltaTime(atof(line.c_str()));
     getline(ifs, line);
+    maxTime(atof(line.c_str()));
     getline(ifs, line);
     getline(ifs, line);
     getline(ifs, line);
     getline(ifs, line);
     getline(ifs, line);
     myPressureFilename = line;
+}
+
+bool cSim::isFullTime()
+{
+    if( ! myPrevGrid )
+        return false;
+    return myPrevGrid->myTime >= myMaxTime;
 }
 main(int argc, char *argv[])
 {
@@ -254,10 +262,11 @@ main(int argc, char *argv[])
 
     theSim.init();
     theSim.source();
-    theSim.step();
-    std::cout << theSim.text();
-    theSim.step();
-    std::cout << theSim.text();
+    while (!theSim.isFullTime())
+    {
+        theSim.step();
+        std::cout << theSim.text();
+    }
 
     return 0;
 }

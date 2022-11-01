@@ -106,6 +106,8 @@ public:
 
     void binary();
 
+    bool isFullTime();
+
     double deltaTime() const
     {
         return myDeltaTime;
@@ -122,9 +124,19 @@ public:
     void deltaTime(double t);
     void deltaSpace(double s);
 
+    void maxTime( double max )
+    {
+        myMaxTime = max;
+    }
+    double maxTime() const
+    {
+        return myMaxTime;
+    }
+
 private:
     int myNx, myNy, myNz; // grid resolution ( node count on each axis )
     double myDeltaTime;   // simulation time step
+    double myMaxTime;
     double myDeltaSpace;  // grid spacing
     double myDeltaTimeSpaceRatio;
     cGrid *myPrevGrid;
