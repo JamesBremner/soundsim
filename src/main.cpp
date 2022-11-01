@@ -21,6 +21,10 @@ void cNode::updateVelocity(cGrid *prev)
     myVx = prevNode.myVx - f * (prev->node(myX + 1, myY, myZ).myPressure - prevNode.myPressure);
     myVy = prevNode.myVy - f * (prev->node(myX, myY + 1, myZ).myPressure - prevNode.myPressure);
     myVz = prevNode.myVz - f * (prev->node(myX, myY, myZ + 1).myPressure - prevNode.myPressure);
+
+
+    // std::cout << myX <<" " << myY <<" "<< myZ
+    //     <<" vel: "<< myVx <<" "<< myVy << "\n";
 }
 void cNode::updatePressure(cGrid *prev)
 {
@@ -40,6 +44,9 @@ void cNode::updatePressure(cGrid *prev)
                            + prevNode.myVy - prev->node(myX, myY - 1, myZ).myVy
 
                            + prevNode.myVz - prev->node(myX, myY, myZ - 1).myVz);
+
+    // std::cout << myX <<" " << myY <<" "<< myZ
+    //     <<" pressure: "<< myPressure << "\n";
 }
 void cNode::updateTestStub(cGrid *prev)
 {
@@ -57,13 +64,13 @@ std::string cNode::text()
 }
 
 cGrid::cGrid(int Nx, int Ny, int Nz, int time)
-    : myNx(Nx), myNy(Ny), myNz(Nz), myTime(time)
+    : myNx(Nx), myNy(Ny), myNz(Nz), myTimeStep(time)
 {
     cNode n;
     n.myPressure = 0;
-    n.myVx = -1;
-    n.myVy = -1;
-    n.myVz = -1;
+    n.myVx = 0;
+    n.myVy = 0;
+    n.myVz = 0;
     n.myDensity = 1.225;
     n.mySpeed = 340;
     myGrid.resize(myNx * myNy * myNz, n);
@@ -83,13 +90,13 @@ cGrid::cGrid(int Nx, int Ny, int Nz, int time)
 }
 void cGrid::updatePressure(cGrid *prev)
 {
-    myTime = prev->myTime + 1;
+    timeStep( *prev );
     for (auto &n : myGrid)
         n.updatePressure(prev);
 }
 void cGrid::updateVelocity(cGrid *prev)
 {
-    myTime = prev->myTime + 1;
+    timeStep( *prev );
     for (auto &n : myGrid)
         n.updateVelocity(prev);
 }
@@ -102,16 +109,16 @@ cNode &cGrid::node(int x, int y, int z)
 {
     if (x < 0)
         x = 0;
-    if (x > myNx)
-        x = myNx;
+    if (x > myNx-1)
+        x = myNx-1;
     if (y < 0)
         y = 0;
-    if (y > myNy)
-        y = myNy;
+    if (y > myNy-1)
+        y = myNy-1;
     if (z < 0)
         z = 0;
-    if (z > myNz)
-        z = myNz;
+    if (z > myNz-1)
+        z = myNz-1;
     int index = x + y * myNx + z * myNx * myNy;
     return myGrid[index];
 }
@@ -120,7 +127,9 @@ std::string cGrid::text()
     std::stringstream ss;
     for (int z = 0; z < myNz; z++)
     {
-        ss << "z = " << z << "\n";
+        if( z != 1 )
+            continue;
+        ss << "Pressure\nz = " << z << "\n";
         for (int y = 0; y < myNy; y++)
         {
             for (int x = 0; x < myNx; x++)
@@ -171,15 +180,15 @@ void cSim::step()
     delete myPrevGrid;
     myPrevGrid = myNextGrid;
     myNextGrid = new cGrid(myNx, myNy, myNz, 0);
-    myNextGrid->updatePressure(myPrevGrid);
+    myNextGrid->updateVelocity(myPrevGrid);
     delete myPrevGrid;
     myPrevGrid = myNextGrid;
     myNextGrid = new cGrid(myNx, myNy, myNz, 0);
-    myNextGrid->updateVelocity(myPrevGrid);
+    myNextGrid->updatePressure(myPrevGrid);
 }
 std::string cSim::text()
 {
-    std::cout << "\n=======\ntime = " << myNextGrid->myTime << "\n";
+    std::cout << "\n=======\ntime = " << myNextGrid->time() << "\n";
     return myNextGrid->text();
 }
 void cSim::binary()
@@ -251,7 +260,7 @@ bool cSim::isFullTime()
 {
     if( ! myPrevGrid )
         return false;
-    return myPrevGrid->myTime >= myMaxTime;
+    return myPrevGrid->time() * myDeltaTime >= myMaxTime;
 }
 main(int argc, char *argv[])
 {
@@ -264,8 +273,8 @@ main(int argc, char *argv[])
     theSim.source();
     while (!theSim.isFullTime())
     {
-        theSim.step();
         std::cout << theSim.text();
+        theSim.step();
     }
 
     return 0;

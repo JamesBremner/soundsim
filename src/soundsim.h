@@ -35,7 +35,6 @@ class cGrid
 public:
     std::vector<cNode> myGrid;
     int myNx, myNy, myNz;
-    int myTime;
 
     /// @brief construct grid
     /// @param Nx number of nodes in x direction
@@ -60,14 +59,34 @@ public:
     /// @return text
 
     std::string text();
-    void binary( std::ofstream& of );
+    void binary(std::ofstream &of);
 
-    /// @brief reference to node at a location
+    /* @brief reference to node at a location
     /// @param x
     /// @param y
     /// @param z
     /// @return node reference
+
+    * If the requested location is outside the grid
+    * return reference to nearest node inside grid
+    */
     cNode &node(int x, int y, int z);
+
+    int time() const
+    {
+        return myTimeStep / 2;
+    }
+    void timeStep(const cGrid &prev)
+    {
+        myTimeStep = prev.timeStep() + 1;
+    }
+    int timeStep() const
+    {
+        return myTimeStep;
+    }
+
+private:
+    int myTimeStep;
 };
 
 /// @brief A Finite Difference Time Domain simulator
@@ -81,14 +100,14 @@ public:
 
     cSim(int Nx, int Ny, int Nz);
 
-    void readParameterFile( const std::string& fname );
+    void readParameterFile(const std::string &fname);
 
     /** @brief Initialize the simulation
-     * 
+     *
      * This should be called after all configuration parameters are set
      * and before the first simulation step
      */
-    
+
     void init();
 
     /// @brief Impose a source
@@ -124,7 +143,7 @@ public:
     void deltaTime(double t);
     void deltaSpace(double s);
 
-    void maxTime( double max )
+    void maxTime(double max)
     {
         myMaxTime = max;
     }
@@ -137,10 +156,9 @@ private:
     int myNx, myNy, myNz; // grid resolution ( node count on each axis )
     double myDeltaTime;   // simulation time step
     double myMaxTime;
-    double myDeltaSpace;  // grid spacing
+    double myDeltaSpace; // grid spacing
     double myDeltaTimeSpaceRatio;
     cGrid *myPrevGrid;
     cGrid *myNextGrid;
     std::string myPressureFilename;
 };
-
