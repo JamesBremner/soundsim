@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <algorithm>
 
@@ -17,11 +18,20 @@ void cNode::updateVelocity(cGrid *prev)
     // Node at this location with previous time step values
     cNode &prevNode = prev->node(myX, myY, myZ);
 
-    // calculate updated velocities ( eq 12 )
+    /* update velocity 
+    The velocity is a function of the previous velocity at this location
+    and the pressures at the nodes on each side of this location
+
+    Since a velocity node is assumed to be located one half the location delta 
+    away from the pressure nod with the same index ( k ) in the +ve direction
+    then the indices of the pressure locations on each side are k and k+1
+
+    Pk            Pk+1
+      <<<<< Vk >>>>>
+    */
     myVx = prevNode.myVx - f * (prev->node(myX + 1, myY, myZ).myPressure - prevNode.myPressure);
     myVy = prevNode.myVy - f * (prev->node(myX, myY + 1, myZ).myPressure - prevNode.myPressure);
     myVz = prevNode.myVz - f * (prev->node(myX, myY, myZ + 1).myPressure - prevNode.myPressure);
-
 
     // std::cout << myX <<" " << myY <<" "<< myZ
     //     <<" vel: "<< myVx <<" "<< myVy << "\n";
@@ -34,7 +44,17 @@ void cNode::updatePressure(cGrid *prev)
     // Node at this location with previous time step values
     cNode &prevNode = prev->node(myX, myY, myZ);
 
-    // calculate updated pressure ( eq 11 )
+    /* update pressure 
+    The pressure is a function of the previous pressure at this location
+    and the velocities at the nodes on each side of this location
+
+    Since a pressure node is assumed to be located one half the location delta 
+    away from the velocity node with the same index ( k ) in the -ve direction
+    then the indices of the pressure locations on each side are k-1 and k
+
+    Vk-1            Vk
+      <<<<< Pk >>>>>
+    */
     myPressure = prevNode.myPressure
 
                  - f * (
@@ -60,7 +80,9 @@ void cNode::updateTestStub(cGrid *prev)
 }
 std::string cNode::text()
 {
-    return std::to_string(myPressure);
+    std::stringstream ss;
+    ss << std::setw(14) << myPressure;
+    return ss.str();
 }
 
 cGrid::cGrid(int Nx, int Ny, int Nz, int time)
@@ -90,13 +112,13 @@ cGrid::cGrid(int Nx, int Ny, int Nz, int time)
 }
 void cGrid::updatePressure(cGrid *prev)
 {
-    timeStep( *prev );
+    timeStep(*prev);
     for (auto &n : myGrid)
         n.updatePressure(prev);
 }
 void cGrid::updateVelocity(cGrid *prev)
 {
-    timeStep( *prev );
+    timeStep(*prev);
     for (auto &n : myGrid)
         n.updateVelocity(prev);
 }
@@ -109,16 +131,16 @@ cNode &cGrid::node(int x, int y, int z)
 {
     if (x < 0)
         x = 0;
-    if (x > myNx-1)
-        x = myNx-1;
+    if (x > myNx - 1)
+        x = myNx - 1;
     if (y < 0)
         y = 0;
-    if (y > myNy-1)
-        y = myNy-1;
+    if (y > myNy - 1)
+        y = myNy - 1;
     if (z < 0)
         z = 0;
-    if (z > myNz-1)
-        z = myNz-1;
+    if (z > myNz - 1)
+        z = myNz - 1;
     int index = x + y * myNx + z * myNx * myNy;
     return myGrid[index];
 }
@@ -127,7 +149,7 @@ std::string cGrid::text()
     std::stringstream ss;
     for (int z = 0; z < myNz; z++)
     {
-        if( z != 1 )
+        if (z != 1)
             continue;
         ss << "Pressure\nz = " << z << "\n";
         for (int y = 0; y < myNy; y++)
@@ -169,8 +191,8 @@ void cSim::init()
 void cSim::source()
 {
     cNode s;
-    s.myX = 1;
-    s.myY = 1;
+    s.myX = 2;
+    s.myY = 2;
     s.myZ = 1;
     s.myPressure = 10;
     myNextGrid->source(s);
@@ -258,7 +280,7 @@ output_velocuty_z_base_filename
 
 bool cSim::isFullTime()
 {
-    if( ! myPrevGrid )
+    if (!myPrevGrid)
         return false;
     return myPrevGrid->time() * myDeltaTime >= myMaxTime;
 }
