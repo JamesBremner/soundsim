@@ -194,7 +194,7 @@ void cSim::source()
     s.myX = 2;
     s.myY = 2;
     s.myZ = 1;
-    s.myPressure = 10;
+    s.myPressure = 0.1;
     myNextGrid->source(s);
 }
 void cSim::step()
@@ -238,6 +238,7 @@ void cSim::deltaSpace(double s)
         throw std::runtime_error(
             "Space resolution too small");
     myDeltaSpace = s;
+    myDeltaTimeSpaceRatio = myDeltaTime / myDeltaSpace;
 
     // simulate a 1m by 1m by 1m space
     myNx = 1 / s;
