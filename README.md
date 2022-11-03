@@ -2,6 +2,8 @@
 
 Finite Difference Time Domain Simulation of Sound Propogation.
 
+![image](https://user-images.githubusercontent.com/2046227/199831661-0dcc6917-b89f-452a-8ba3-a0dd3fb5cbc5.png)
+
 The propagation of sound waves is governed by the following system of first order partial differential
 equations:
 
