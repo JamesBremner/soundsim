@@ -209,8 +209,13 @@ void cSim::step()
 }
 std::string cSim::text()
 {
-    std::cout << "\n=======\ntime = " << myNextGrid->time() << "\n";
-    return myNextGrid->text();
+    std::stringstream ss;
+    ss << "time = " 
+        << 1000 * myNextGrid->time() * myDeltaTime 
+        << " msecs\n";
+    std::cout << ss.str();
+    ss << myNextGrid->text();
+    return ss.str();
 }
 void cSim::binary()
 {

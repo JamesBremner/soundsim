@@ -1,3 +1,5 @@
+#include <vector>
+
 class cGrid;
 
 /// @brief A location in 3D space
@@ -129,6 +131,13 @@ public:
         return myDeltaTimeSpaceRatio;
     }
 
+    /// @brief set simulation duration
+    /// @param max seconds
+    void maxTime(double max)
+    {
+        myMaxTime = max;
+    }
+
 private:
 
     void binary();
@@ -144,10 +153,6 @@ private:
     void deltaTime(double t);
     void deltaSpace(double s);
 
-    void maxTime(double max)
-    {
-        myMaxTime = max;
-    }
     double maxTime() const
     {
         return myMaxTime;

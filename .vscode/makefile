@@ -5,9 +5,11 @@ VPATH = ./src
 INCS =  \
 	-I../ravencode/pub/src \
 	-I../raven-set \
+	-I../boost/boost1_78 
 
 LIBS = \
 	-lgdiplus -lgdi32 -lcomdlg32 -lstdc++fs \
+	-L../boost/boost1_78/lib \
 
 	#-mwindows
 
@@ -22,7 +24,8 @@ CCflags = -std=c++17 $(OPT) -D_mingw_
 
 # sources
 OBJ_starter = \
-	$(ODIR)/main.o $(ODIR)/soundsim.o
+	$(ODIR)/main.o $(ODIR)/soundsim.o \
+	$(ODIR)/cGUI.o
 
 ### COMPILE
 

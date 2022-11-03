@@ -1,4 +1,5 @@
 #include <wex.h>
+#include <propertygrid.h>
 
 class cStarterGUI
 {
@@ -66,31 +67,13 @@ protected:
 class cGUI : public cStarterGUI
 {
 public:
-    cGUI()
-        : cStarterGUI(
-              "SoundSim",
-              {50, 50, 1000, 500}),
-          pl(wex::maker::make<wex::panel>(fm))
-    {
-        pl.move(0, 0, 900, 400);
-        pl.fontName("courier");
-
-        theSim.readParameterFile("params.txt");
-
-        theSim.init();
-        theSim.source();
-        while (!theSim.isFullTime())
-        {
-            std::cout << theSim.text();
-            theSim.step();
-        }
-
-        pl.text( theSim.text() );
-
-        show();
-        run();
-    }
+    cGUI();
 
 private:
-    wex::panel &pl;
+    wex::panel &plParams;
+    wex::panel &plResults;
+    wex::propertyGrid& pg;
+    wex::button& bnSim;
+
+    void simulate();
 };
