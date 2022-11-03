@@ -12,13 +12,13 @@ cGUI::cGUI()
       bnSim(wex::maker::make<wex::button>(plParams))
 {
     plParams.move(0, 0, 200, 400);
-    pg.move({10, 50, 180, 250});
+    pg.move({10, 50, 180, 200});
     pg.labelWidth(120);
-    pg.string("Space delta ( cm )","100");
+    pg.string("Space delta ( cm )","10");
     pg.string("Time delta (ms)","1");
     pg.string("Duration (ms)", "10");
     pg.string("Display Z (cm)", "10");
-    bnSim.move(50, 300, 100, 30);
+    bnSim.move(50, 260, 100, 30);
     bnSim.text("SIMULATE");
     bnSim.events().click(
         [this]
