@@ -113,19 +113,25 @@ public:
     /// @brief Impose a source
     void source();
 
-    /// @brief Advance simulatiobn one time step
+    /// @brief Advance simulation one time step
     void step();
-
-    /// @brief Text display of simulation state
-    /// @return text
 
     /// @brief human readable display of results
     /// @return text
     std::string text();
 
-    void binary();
-
+    /// @brief Check for simulation completed
+    /// @return true if requested duration reached
     bool isFullTime();
+
+    double deltaSpaceTimeRatio() const
+    {
+        return myDeltaTimeSpaceRatio;
+    }
+
+private:
+
+    void binary();
 
     double deltaTime() const
     {
@@ -135,11 +141,6 @@ public:
     {
         return myDeltaSpace;
     }
-    double deltaSpaceTimeRatio() const
-    {
-        return myDeltaTimeSpaceRatio;
-    }
-
     void deltaTime(double t);
     void deltaSpace(double s);
 
@@ -162,3 +163,5 @@ private:
     cGrid *myNextGrid;
     std::string myPressureFilename;
 };
+
+extern cSim theSim;
