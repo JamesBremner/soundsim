@@ -136,28 +136,14 @@ public:
         return myDeltaSpace;
     }
 
+    void deltaTime(double t);
+    void deltaSpace(double s);
+
     /// @brief set simulation duration
     /// @param max seconds
     void maxTime(double max)
     {
         myMaxTime = max;
-    }
-
-private:
-
-    void binary();
-
-    double deltaTime() const
-    {
-        return myDeltaTime;
-    }
-
-    void deltaTime(double t);
-    void deltaSpace(double s);
-
-    double maxTime() const
-    {
-        return myMaxTime;
     }
 
 private:
@@ -168,7 +154,20 @@ private:
     double myDeltaTimeSpaceRatio;
     cGrid *myPrevGrid;
     cGrid *myNextGrid;
+
     std::string myPressureFilename;
+
+        void binary();
+
+    double deltaTime() const
+    {
+        return myDeltaTime;
+    }
+
+    double maxTime() const
+    {
+        return myMaxTime;
+    }
 };
 
 extern cSim theSim;
