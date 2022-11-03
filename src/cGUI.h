@@ -70,10 +70,10 @@ public:
         : cStarterGUI(
               "SoundSim",
               {50, 50, 1000, 500}),
-          lb(wex::maker::make<wex::label>(fm))
+          pl(wex::maker::make<wex::panel>(fm))
     {
-        lb.move(50, 50, 100, 30);
-        lb.text("Hello World");
+        pl.move(0, 0, 900, 400);
+        pl.fontName("courier");
 
         theSim.readParameterFile("params.txt");
 
@@ -85,10 +85,12 @@ public:
             theSim.step();
         }
 
+        pl.text( theSim.text() );
+
         show();
         run();
     }
 
 private:
-    wex::label &lb;
+    wex::panel &pl;
 };
