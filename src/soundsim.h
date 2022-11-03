@@ -60,7 +60,8 @@ public:
     /// @brief display of node values
     /// @return text
 
-    std::string text();
+    std::string text( int z );
+
     void binary(std::ofstream &of);
 
     /* @brief reference to node at a location
@@ -120,7 +121,7 @@ public:
 
     /// @brief human readable display of results
     /// @return text
-    std::string text();
+    std::string text( int z );
 
     /// @brief Check for simulation completed
     /// @return true if requested duration reached
@@ -129,6 +130,10 @@ public:
     double deltaSpaceTimeRatio() const
     {
         return myDeltaTimeSpaceRatio;
+    }
+    double deltaSpace() const
+    {
+        return myDeltaSpace;
     }
 
     /// @brief set simulation duration
@@ -146,10 +151,7 @@ private:
     {
         return myDeltaTime;
     }
-    double deltaSpace() const
-    {
-        return myDeltaSpace;
-    }
+
     void deltaTime(double t);
     void deltaSpace(double s);
 
