@@ -8,13 +8,13 @@
 
 #include "soundsim.h"
 
-void cNode::updateVelocity(cGrid *prev)
+void cNode::updateVelocity(cGrid &prev)
 {
     // Factor accounting for node density and simulation resolution
     double f = theSim.deltaSpaceTimeRatio() / myDensity;
 
     // Node at this location with previous time step values
-    cNode &prevNode = prev->node(myX, myY, myZ);
+    cNode &prevNode = prev.node(myX, myY, myZ);
 
     /* update velocity
     The velocity is a function of the previous velocity at this location
@@ -27,20 +27,20 @@ void cNode::updateVelocity(cGrid *prev)
     Pk            Pk+1
       <<<<< Vk >>>>>
     */
-    myVx = prevNode.myVx - f * (prev->node(myX + 1, myY, myZ).myPressure - prevNode.myPressure);
-    myVy = prevNode.myVy - f * (prev->node(myX, myY + 1, myZ).myPressure - prevNode.myPressure);
-    myVz = prevNode.myVz - f * (prev->node(myX, myY, myZ + 1).myPressure - prevNode.myPressure);
+    myVx = prevNode.myVx - f * (prev.node(myX + 1, myY, myZ).myPressure - prevNode.myPressure);
+    myVy = prevNode.myVy - f * (prev.node(myX, myY + 1, myZ).myPressure - prevNode.myPressure);
+    myVz = prevNode.myVz - f * (prev.node(myX, myY, myZ + 1).myPressure - prevNode.myPressure);
 
     // std::cout << myX <<" " << myY <<" "<< myZ
     //     <<" vel: "<< myVx <<" "<< myVy << "\n";
 }
-void cNode::updatePressure(cGrid *prev)
+void cNode::updatePressure(cGrid &prev)
 {
     // Factor accounting for node density, sound speed and simulation resolution
     double f = myDensity * mySpeed * mySpeed * theSim.deltaSpaceTimeRatio();
 
     // Node at this location with previous time step values
-    cNode &prevNode = prev->node(myX, myY, myZ);
+    cNode &prevNode = prev.node(myX, myY, myZ);
 
     /* update pressure
     The pressure is a function of the previous pressure at this location
@@ -57,11 +57,11 @@ void cNode::updatePressure(cGrid *prev)
 
                  - f * (
 
-                           prevNode.myVx - prev->node(myX - 1, myY, myZ).myVx
+                           prevNode.myVx - prev.node(myX - 1, myY, myZ).myVx
 
-                           + prevNode.myVy - prev->node(myX, myY - 1, myZ).myVy
+                           + prevNode.myVy - prev.node(myX, myY - 1, myZ).myVy
 
-                           + prevNode.myVz - prev->node(myX, myY, myZ - 1).myVz);
+                           + prevNode.myVz - prev.node(myX, myY, myZ - 1).myVz);
 
     // std::cout << myX <<" " << myY <<" "<< myZ
     //     <<" pressure: "<< myPressure << "\n";
@@ -79,14 +79,22 @@ void cNode::updateTestStub(cGrid *prev)
 std::string cNode::text()
 {
     std::stringstream ss;
-    ss << std::setw(8) << std::setprecision(3)
+    ss << std::setw(8) << std::setprecision(2)
        << myPressure;
     return ss.str();
 }
 
-cGrid::cGrid(int Nx, int Ny, int Nz, int time)
-    : myNx(Nx), myNy(Ny), myNz(Nz), myTimeStep(time)
+cGrid::cGrid()
 {
+
+}
+
+void cGrid::resize(int Nx, int Ny, int Nz, int time)
+{
+    myNx = Nx;
+    myNy = Ny;
+    myNz = Nz;
+    myTimeStep = time;
     cNode n;
     n.myPressure = 0;
     n.myVx = 0;
@@ -109,15 +117,15 @@ cGrid::cGrid(int Nx, int Ny, int Nz, int time)
         }
     }
 }
-void cGrid::updatePressure(cGrid *prev)
+void cGrid::updatePressure(cGrid& prev)
 {
-    timeStep(*prev);
+    timeStep(prev);
     for (auto &n : myGrid)
         n.updatePressure(prev);
 }
-void cGrid::updateVelocity(cGrid *prev)
+void cGrid::updateVelocity(cGrid& prev)
 {
-    timeStep(*prev);
+    timeStep(prev);
     for (auto &n : myGrid)
         n.updateVelocity(prev);
 }
@@ -178,8 +186,8 @@ cSim::cSim()
 }
 void cSim::init()
 {
-    myPrevGrid = 0;
-    myNextGrid = new cGrid(myNx, myNy, myNz, 0);
+    myPressureGrid.resize(myNx,myNy,myNz,myDeltaTime);
+    myVelocityGrid.resize(myNx,myNy,myNz,myDeltaTime);
 }
 void cSim::source()
 {
@@ -188,29 +196,23 @@ void cSim::source()
     s.myY = 4;
     s.myZ = 1;
     s.myPressure = 0.1;
-    myNextGrid->source(s);
+    myPressureGrid.source(s);
 }
 void cSim::step()
 {
-    delete myPrevGrid;
-    myPrevGrid = myNextGrid;
-    myNextGrid = new cGrid(myNx, myNy, myNz, 0);
-    myNextGrid->updateVelocity(myPrevGrid);
-    delete myPrevGrid;
-    myPrevGrid = myNextGrid;
-    myNextGrid = new cGrid(myNx, myNy, myNz, 0);
-    myNextGrid->updatePressure(myPrevGrid);
+    myVelocityGrid.updateVelocity(myPressureGrid);
+    myPressureGrid.updatePressure(myVelocityGrid);
 }
 std::string cSim::text( int z)
 {
     std::stringstream ss;
     ss << "time = "
-       << 1000 * myNextGrid->time() * myDeltaTime
+       << 1000 * myPressureGrid.time() * myDeltaTime
        << " msecs "
        << "Pressure at z = " 
         << z * myDeltaSpace * 100 << " cm\n";
     std::cout << ss.str();
-    ss << myNextGrid->text(z);
+    ss << myPressureGrid.text(z);
     return ss.str();
 }
 void cSim::binary()
@@ -225,7 +227,7 @@ void cSim::binary()
     ofs << myNx * myDeltaSpace
         << myNy * myDeltaSpace
         << myNz * myDeltaSpace;
-    myNextGrid->binary(ofs);
+    myPressureGrid.binary(ofs);
 }
 void cSim::deltaTime(double t)
 {
@@ -244,6 +246,8 @@ void cSim::deltaSpace(double s)
     myNx = 1 / s;
     myNy = 1 / s;
     myNz = 1 / s;
+
+
 }
 void cSim::readParameterFile(const std::string &fname)
 {
@@ -281,7 +285,5 @@ output_velocuty_z_base_filename
 
 bool cSim::isFullTime()
 {
-    if (!myPrevGrid)
-        return false;
-    return myPrevGrid->time() * myDeltaTime >= myMaxTime;
+    return myPressureGrid.time() * myDeltaTime >= myMaxTime;
 }

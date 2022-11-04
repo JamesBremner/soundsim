@@ -17,7 +17,7 @@ main()
     }
 
     std::string expected =
-       "0 -1.1e+07 1.09e+08 -5.27e+08 1.11e+09 -5.27e+08 1.09e+08 -1.1e+07 4.57e+05        0";
+       "0  9.9e+03 -1.2e+05  4.3e+05        0  4.3e+05 -1.2e+05  9.9e+03        0        0";
     std::cout << theSim.text(1);
     if( theSim.text(1).find(expected) == -1 )
         std::cout << "test FAILED !!!\n";

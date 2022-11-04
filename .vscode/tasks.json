@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "soundsim",
+            "label": "test",
             "options": {
                 "cwd": "${workspaceFolder}"
                },
@@ -12,7 +12,7 @@
             "args": [
                 "-f",
                 ".vscode/makefile",
-                "starter"
+                "test"
             ],
 
             "problemMatcher": [
@@ -24,7 +24,7 @@
             }
         },
         {
-            "label": "test",
+            "label": "soundsim",
             "options": {
                 "cwd": "${workspaceFolder}"
                },
@@ -32,7 +32,7 @@
             "args": [
                 "-f",
                 ".vscode/makefile",
-                "test"
+                "starter"
             ],
 
             "problemMatcher": [

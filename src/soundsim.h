@@ -13,11 +13,13 @@ public:
     double myDensity; //  density in kg/m3
     double mySpeed;   // speed of sound in m/s
 
-    /// @brief Update the values of the node
-    /// @param prev pointer to grid of nodes at previous time step
+    /// @brief Update the pressure at the node
+    /// @param v velocity grid
+    void updatePressure(cGrid& v);
 
-    void updatePressure(cGrid *prev);
-    void updateVelocity(cGrid *prev);
+    /// @brief Update velocity
+    /// @param p presure grid
+    void updateVelocity(cGrid& p);
 
     void updateTestStub(cGrid *prev);
 
@@ -40,23 +42,23 @@ public:
     int myNx, myNy, myNz;
 
     /// @brief construct grid
+
+    cGrid();
+
     /// @param Nx number of nodes in x direction
     /// @param Ny number of nodes in y direction
     /// @param Nz number of nodes in x direction
     /// @param time time of simulation
-    cGrid(
-        int Nx, int Ny, int Nz,
-        int time);
+    void resize(int Nx, int Ny, int Nz, int time);
 
     /// @brief Impose a time source
     /// @param n Node with source values
 
     void source(const cNode &n);
 
-    /// @brief update node values
-    /// @param prev pointer to grid of nodes with previous time step values
-    void updatePressure(cGrid *prev);
-    void updateVelocity(cGrid *prev);
+    /// update node values
+    void updatePressure(cGrid &v);
+    void updateVelocity(cGrid &p);
 
     /// @brief display of node values
     /// @return text
@@ -150,8 +152,8 @@ private:
     double myMaxTime;
     double myDeltaSpace; // grid spacing
     double myDeltaTimeSpaceRatio;
-    cGrid *myPrevGrid;
-    cGrid *myNextGrid;
+    cGrid myPressureGrid;
+    cGrid myVelocityGrid;
 
     std::string myPressureFilename;
 

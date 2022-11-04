@@ -33,8 +33,8 @@ OBJ_test = \
 ### COMPILE
 
 $(ODIR)/%.o: %.cpp soundsim.h cGUI.h
-	g++  $(CCflags) \
-	-c -o $@ $< $(INCS)
+	g++ $< \
+	-c -o $@  $(INCS) $(CCflags)
 
 ### LINK
 
