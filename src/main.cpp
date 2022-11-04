@@ -9,7 +9,7 @@
 
 #include "cGUI.h"
 
-cSim theSim(4, 4, 4);
+cSim theSim;
 
 main(int argc, char *argv[])
 {

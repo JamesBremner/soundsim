@@ -170,8 +170,8 @@ void cGrid::binary(std::ofstream &of)
         }
     }
 }
-cSim::cSim(int Nx, int Ny, int Nz)
-    : myNx(Nx), myNy(Ny), myNz(Nz),
+cSim::cSim()
+    : myNx(4), myNy(4), myNz(4),
       myDeltaSpace(1), myDeltaTime(1),
       myDeltaTimeSpaceRatio(myDeltaTime / myDeltaSpace)
 {

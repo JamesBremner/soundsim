@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/soundsim.exe",
+            "program": "${workspaceFolder}/bin/test.exe",
               "args": ["params.txt",""],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",

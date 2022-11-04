@@ -27,6 +27,9 @@ OBJ_starter = \
 	$(ODIR)/main.o $(ODIR)/soundsim.o \
 	$(ODIR)/cGUI.o
 
+OBJ_test = \
+	$(ODIR)/test.o $(ODIR)/soundsim.o
+
 ### COMPILE
 
 $(ODIR)/%.o: %.cpp soundsim.h cGUI.h
@@ -38,6 +41,11 @@ $(ODIR)/%.o: %.cpp soundsim.h cGUI.h
 starter: $(OBJ_starter)
 	g++ $(OPT) \
 	-o bin/soundsim.exe $^  \
+	$(static_link_flags) $(LIBS)
+
+test: $(OBJ_test)
+	g++ -o bin/test.exe \
+	$(OPT)  $^  \
 	$(static_link_flags) $(LIBS)
 
 .PHONY: clean

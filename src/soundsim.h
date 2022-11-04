@@ -1,4 +1,5 @@
 #include <vector>
+#include <string>
 
 class cGrid;
 
@@ -96,12 +97,9 @@ private:
 class cSim
 {
 public:
-    /// @brief Construct simulation of specified size
-    /// @param Nx
-    /// @param Ny
-    /// @param Nz
 
-    cSim(int Nx, int Ny, int Nz);
+    /// @brief Construct simulation with default config
+    cSim();
 
     void readParameterFile(const std::string &fname);
 

@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "starter",
+            "label": "soundsim",
             "options": {
                 "cwd": "${workspaceFolder}"
                },
@@ -13,6 +13,26 @@
                 "-f",
                 ".vscode/makefile",
                 "starter"
+            ],
+
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+               },
+            "command": "mingw32-make.exe",
+            "args": [
+                "-f",
+                ".vscode/makefile",
+                "test"
             ],
 
             "problemMatcher": [
