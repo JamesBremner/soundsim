@@ -11,7 +11,7 @@
 void cNode::updateVelocity(cGrid &prev)
 {
     // Factor accounting for node density and simulation resolution
-    double f = theSim.deltaSpaceTimeRatio() / myDensity;
+    double f = theSim.config.deltaSpaceTimeRatio() / myDensity;
 
     // Node at this location with previous time step values
     cNode &prevNode = prev.node(myX, myY, myZ);
@@ -37,7 +37,7 @@ void cNode::updateVelocity(cGrid &prev)
 void cNode::updatePressure(cGrid &prev)
 {
     // Factor accounting for node density, sound speed and simulation resolution
-    double f = myDensity * mySpeed * mySpeed * theSim.deltaSpaceTimeRatio();
+    double f = myDensity * mySpeed * mySpeed * theSim.config.deltaSpaceTimeRatio();
 
     // Node at this location with previous time step values
     cNode &prevNode = prev.node(myX, myY, myZ);
@@ -179,14 +179,18 @@ void cGrid::binary(std::ofstream &of)
     }
 }
 cSim::cSim()
-    : myNx(4), myNy(4), myNz(4),
-      myDeltaTime(1)
+    : myNx(4), myNy(4), myNz(4)
 {
 }
 void cSim::init()
 {
-    myPressureGrid.resize(myNx,myNy,myNz,myDeltaTime);
-    myVelocityGrid.resize(myNx,myNy,myNz,myDeltaTime);
+    // simulate a 1m by 1m by 1m space
+    double ds = config.deltaSpace_m();
+    myNx = 1 / ds;
+    myNy = 1 / ds;
+    myNz = 1 / ds;
+    myPressureGrid.resize(myNx,myNy,myNz,config.deltaTime_secs());
+    myVelocityGrid.resize(myNx,myNy,myNz,config.deltaTime_secs());
 }
 void cSim::source()
 {
@@ -204,7 +208,7 @@ std::string cSim::text( int z)
 {
     std::stringstream ss;
     ss << "\ntime = "
-       << 1000 * myPressureGrid.time() * myDeltaTime
+       << myPressureGrid.time() * config.deltaTime_millisecs()
        << " msecs "
        << "Pressure at z = " 
         << z * config.deltaSpace_m() * 100 << " cm\n\n";
@@ -226,26 +230,7 @@ void cSim::binary()
         << myNz * config.deltaSpace_m();
     myPressureGrid.binary(ofs);
 }
-void cSim::deltaTime(double t)
-{
-    myDeltaTime = t;
-    myDeltaTimeSpaceRatio = myDeltaTime / config.deltaSpace_m();
-}
-void cSim::deltaSpace(double s)
-{
-    if (s < 1e-6)
-        throw std::runtime_error(
-            "Space resolution too small");
-    config.deltaSpace_cm( 100 * s );
-    myDeltaTimeSpaceRatio = myDeltaTime / config.deltaSpace_m();
 
-    // simulate a 1m by 1m by 1m space
-    myNx = 1 / s;
-    myNy = 1 / s;
-    myNz = 1 / s;
-
-
-}
 void cSim::readParameterFile(const std::string &fname)
 {
     /*
@@ -267,11 +252,11 @@ output_velocuty_z_base_filename
             "Cannot read " + fname);
     std::string line;
     getline(ifs, line);
-    deltaSpace(atof(line.c_str()));
+    config.deltaSpace_cm(atof(line.c_str())* 100);
     getline(ifs, line);
-    deltaTime(atof(line.c_str()));
+    config.deltaTime_millisecs(atof(line.c_str()));
     getline(ifs, line);
-    maxTime(atof(line.c_str()));
+    config.maxTime_millisecs(atof(line.c_str())* 1000);
     getline(ifs, line);
     getline(ifs, line);
     getline(ifs, line);
@@ -282,5 +267,5 @@ output_velocuty_z_base_filename
 
 bool cSim::isFullTime()
 {
-    return myPressureGrid.time() * myDeltaTime >= myMaxTime;
+    return myPressureGrid.time() * config.deltaTime_secs() >= config.maxTime_secs();
 }

@@ -40,23 +40,32 @@ void cGUI::simulate()
 {
     //theSim.readParameterFile("params.txt");
 
-    theSim.deltaSpace(
-        atof(pg.value("Space delta ( cm )").c_str())/100.);
-    theSim.deltaTime(
-        atof(pg.value("Time delta (ms)").c_str())/1000.);
+    try {
+    theSim.config.deltaSpace_cm(
+        atof(pg.value("Space delta ( cm )").c_str()));
+    theSim.config.deltaTime_millisecs(
+        atof(pg.value("Time delta (ms)").c_str()));
     theSim.config.sourceLocation_cm(
         atof(pg.value("Source X (cm)").c_str()),
         atof(pg.value("Source Y (cm)").c_str()),
         atof(pg.value("Source Z (cm)").c_str()));
-    theSim.maxTime(
-        atof(pg.value("Duration (ms)").c_str()) / 1000.);
+    theSim.config.maxTime_millisecs(
+        atof(pg.value("Duration (ms)").c_str()));
+    }
+    catch( std::runtime_error& e)
+    {
+        wex::msgbox( e.what() );
+
+        return;
+    }
+
     int zreq = atoi(pg.value("Display Z (cm)").c_str());
     if( 0 > zreq || zreq > 100 )
         {
             wex::msgbox("Bad Display Z value.  Accepts 0 to 100");
             return;
         }
-    int z = zreq / ( 100 * theSim.deltaSpace());
+    int z = zreq / ( 100 * theSim.config.deltaSpace_m());
 
     theSim.init();
     theSim.source();

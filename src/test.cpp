@@ -5,9 +5,9 @@ cSim theSim;
 
 main()
 {
-    theSim.deltaSpace(0.1);
-    theSim.deltaTime(0.002);
-    theSim.maxTime(0.006);
+    theSim.config.deltaSpace_cm(10);
+    theSim.config.deltaTime_millisecs(2);
+    theSim.config.maxTime_millisecs(6);
     theSim.config.sourceLocation_cm( 40,40,10 );
 
     theSim.init();

@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <stdexcept>
 
 class cGrid;
 
@@ -15,11 +16,11 @@ public:
 
     /// @brief Update the pressure at the node
     /// @param v velocity grid
-    void updatePressure(cGrid& v);
+    void updatePressure(cGrid &v);
 
     /// @brief Update velocity
     /// @param p presure grid
-    void updateVelocity(cGrid& p);
+    void updateVelocity(cGrid &p);
 
     void updateTestStub(cGrid *prev);
 
@@ -63,7 +64,7 @@ public:
     /// @brief display of node values
     /// @return text
 
-    std::string text( int z );
+    std::string text(int z);
 
     void binary(std::ofstream &of);
 
@@ -97,7 +98,7 @@ private:
 
 /**
  * @brief Parameters
- * 
+ *
  * This stores simulation parametes
  * looking after conversions between
  * user units ( milliseconds and centimeters )
@@ -106,31 +107,64 @@ private:
  */
 class cConfig
 {
-    public:
-    void deltaSpace_cm( double s )
+public:
+    void deltaSpace_cm(double s)
     {
+        if (s < 1e-3)
+            throw std::runtime_error(
+                "Space resolution too great");
         myDeltaSpacem = s / 100.0;
     }
     double deltaSpace_m() const
     {
         return myDeltaSpacem;
     }
-    void sourceLocation_cm( double x, double y, double z )
+    void deltaTime_millisecs(double t)
+    {
+        if (t < 0.1)
+            throw std::runtime_error(
+                "delta time must be greater then 0.1 millisecond");
+        myDeltaTimesecs = t / 1000.0;
+    }
+    double deltaTime_secs() const
+    {
+        return myDeltaTimesecs;
+    }
+    double deltaTime_millisecs() const
+    {
+        return myDeltaTimesecs * 1000;
+    }
+    double deltaSpaceTimeRatio() const
+    {
+        return myDeltaSpacem / myDeltaTimesecs;
+    }
+    void maxTime_millisecs(double t)
+    {
+        myMaxTimesecs = t / 1000.0;
+    }
+    double maxTime_secs() const
+    {
+        return myMaxTimesecs;
+    }
+    void sourceLocation_cm(double x, double y, double z)
     {
         mySrcXcm = x;
         mySrcYcm = y;
         mySrcZcm = z;
     }
 
-    void sourceLocation_grid( int& x, int& y, int& z ) const
+    void sourceLocation_grid(int &x, int &y, int &z) const
     {
-        x = mySrcXcm / ( 100 * myDeltaSpacem );
-        y = mySrcYcm / ( 100 * myDeltaSpacem );
-        z = mySrcZcm / ( 100 * myDeltaSpacem );
+        x = mySrcXcm / (100 * myDeltaSpacem);
+        y = mySrcYcm / (100 * myDeltaSpacem);
+        z = mySrcZcm / (100 * myDeltaSpacem);
     }
 
-    private:
-    double myDeltaSpacem; // grid spacing
+private:
+    double myDeltaSpacem;   // grid spacing
+    double myDeltaTimesecs; // simulation time step
+    double myDeltaSpaceTimeRatio;
+    double myMaxTimesecs;
     double mySrcXcm;
     double mySrcYcm;
     double mySrcZcm;
@@ -140,7 +174,6 @@ class cConfig
 class cSim
 {
 public:
-
     cConfig config;
 
     /// @brief Construct simulation with default config
@@ -164,52 +197,21 @@ public:
 
     /// @brief human readable display of results
     /// @return text
-    std::string text( int z );
+    std::string text(int z);
 
     /// @brief Check for simulation completed
     /// @return true if requested duration reached
     bool isFullTime();
 
-    double deltaSpaceTimeRatio() const
-    {
-        return myDeltaTimeSpaceRatio;
-    }
-    double deltaSpace() const
-    {
-        return config.deltaSpace_m();
-    }
-
-    void deltaTime(double t);
-    void deltaSpace(double s);
-
-    /// @brief set simulation duration
-    /// @param max seconds
-    void maxTime(double max)
-    {
-        myMaxTime = max;
-    }
-
 private:
     int myNx, myNy, myNz; // grid resolution ( node count on each axis )
-    double myDeltaTime;   // simulation time step
-    double myMaxTime;
-    double myDeltaTimeSpaceRatio;
+
     cGrid myPressureGrid;
     cGrid myVelocityGrid;
 
     std::string myPressureFilename;
 
-        void binary();
-
-    double deltaTime() const
-    {
-        return myDeltaTime;
-    }
-
-    double maxTime() const
-    {
-        return myMaxTime;
-    }
+    void binary();
 };
 
 extern cSim theSim;
