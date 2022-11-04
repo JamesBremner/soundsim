@@ -95,10 +95,53 @@ private:
     int myTimeStep;
 };
 
+/**
+ * @brief Parameters
+ * 
+ * This stores simulation parametes
+ * looking after conversions between
+ * user units ( milliseconds and centimeters )
+ * MKS ubits ( seconds and meters )
+ * grid units ( integers )
+ */
+class cConfig
+{
+    public:
+    void deltaSpace_cm( double s )
+    {
+        myDeltaSpacem = s / 100.0;
+    }
+    double deltaSpace_m() const
+    {
+        return myDeltaSpacem;
+    }
+    void sourceLocation_cm( double x, double y, double z )
+    {
+        mySrcXcm = x;
+        mySrcYcm = y;
+        mySrcZcm = z;
+    }
+
+    void sourceLocation_grid( int& x, int& y, int& z ) const
+    {
+        x = mySrcXcm / ( 100 * myDeltaSpacem );
+        y = mySrcYcm / ( 100 * myDeltaSpacem );
+        z = mySrcZcm / ( 100 * myDeltaSpacem );
+    }
+
+    private:
+    double myDeltaSpacem; // grid spacing
+    double mySrcXcm;
+    double mySrcYcm;
+    double mySrcZcm;
+};
+
 /// @brief A Finite Difference Time Domain simulator
 class cSim
 {
 public:
+
+    cConfig config;
 
     /// @brief Construct simulation with default config
     cSim();
@@ -133,7 +176,7 @@ public:
     }
     double deltaSpace() const
     {
-        return myDeltaSpace;
+        return config.deltaSpace_m();
     }
 
     void deltaTime(double t);
@@ -150,7 +193,6 @@ private:
     int myNx, myNy, myNz; // grid resolution ( node count on each axis )
     double myDeltaTime;   // simulation time step
     double myMaxTime;
-    double myDeltaSpace; // grid spacing
     double myDeltaTimeSpaceRatio;
     cGrid myPressureGrid;
     cGrid myVelocityGrid;

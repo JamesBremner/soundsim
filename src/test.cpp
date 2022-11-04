@@ -8,6 +8,7 @@ main()
     theSim.deltaSpace(0.1);
     theSim.deltaTime(0.002);
     theSim.maxTime(0.006);
+    theSim.config.sourceLocation_cm( 40,40,10 );
 
     theSim.init();
     theSim.source();

@@ -16,8 +16,11 @@ cGUI::cGUI()
     pg.labelWidth(120);
     pg.string("Space delta ( cm )","10");
     pg.string("Time delta (ms)","1");
+    pg.string("Source X (cm)","50");
+    pg.string("Source Y (cm)","50");
+    pg.string("Source Z (cm)","50");
     pg.string("Duration (ms)", "10");
-    pg.string("Display Z (cm)", "10");
+    pg.string("Display Z (cm)", "50");
     bnSim.move(50, 260, 100, 30);
     bnSim.text("SIMULATE");
     bnSim.events().click(
@@ -41,6 +44,10 @@ void cGUI::simulate()
         atof(pg.value("Space delta ( cm )").c_str())/100.);
     theSim.deltaTime(
         atof(pg.value("Time delta (ms)").c_str())/1000.);
+    theSim.config.sourceLocation_cm(
+        atof(pg.value("Source X (cm)").c_str()),
+        atof(pg.value("Source Y (cm)").c_str()),
+        atof(pg.value("Source Z (cm)").c_str()));
     theSim.maxTime(
         atof(pg.value("Duration (ms)").c_str()) / 1000.);
     int zreq = atoi(pg.value("Display Z (cm)").c_str());

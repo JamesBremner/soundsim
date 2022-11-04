@@ -180,8 +180,7 @@ void cGrid::binary(std::ofstream &of)
 }
 cSim::cSim()
     : myNx(4), myNy(4), myNz(4),
-      myDeltaSpace(1), myDeltaTime(1),
-      myDeltaTimeSpaceRatio(myDeltaTime / myDeltaSpace)
+      myDeltaTime(1)
 {
 }
 void cSim::init()
@@ -192,9 +191,7 @@ void cSim::init()
 void cSim::source()
 {
     cNode s;
-    s.myX = 4;
-    s.myY = 4;
-    s.myZ = 1;
+    config.sourceLocation_grid( s.myX, s.myY, s.myZ );
     s.myPressure = 0.1;
     myPressureGrid.source(s);
 }
@@ -206,11 +203,11 @@ void cSim::step()
 std::string cSim::text( int z)
 {
     std::stringstream ss;
-    ss << "time = "
+    ss << "\ntime = "
        << 1000 * myPressureGrid.time() * myDeltaTime
        << " msecs "
        << "Pressure at z = " 
-        << z * myDeltaSpace * 100 << " cm\n";
+        << z * config.deltaSpace_m() * 100 << " cm\n\n";
     std::cout << ss.str();
     ss << myPressureGrid.text(z);
     return ss.str();
@@ -224,23 +221,23 @@ void cSim::binary()
 
     ofs << myNx << myNy << myNz;
     ofs << 0.0 << 0.0 << 0.0;
-    ofs << myNx * myDeltaSpace
-        << myNy * myDeltaSpace
-        << myNz * myDeltaSpace;
+    ofs << myNx * config.deltaSpace_m()
+        << myNy * config.deltaSpace_m()
+        << myNz * config.deltaSpace_m();
     myPressureGrid.binary(ofs);
 }
 void cSim::deltaTime(double t)
 {
     myDeltaTime = t;
-    myDeltaTimeSpaceRatio = myDeltaTime / myDeltaSpace;
+    myDeltaTimeSpaceRatio = myDeltaTime / config.deltaSpace_m();
 }
 void cSim::deltaSpace(double s)
 {
     if (s < 1e-6)
         throw std::runtime_error(
             "Space resolution too small");
-    myDeltaSpace = s;
-    myDeltaTimeSpaceRatio = myDeltaTime / myDeltaSpace;
+    config.deltaSpace_cm( 100 * s );
+    myDeltaTimeSpaceRatio = myDeltaTime / config.deltaSpace_m();
 
     // simulate a 1m by 1m by 1m space
     myNx = 1 / s;
